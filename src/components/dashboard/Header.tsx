@@ -1,6 +1,7 @@
 import { Skull, Zap, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SyncStatus } from './SyncStatus';
+import { CartDrawer } from '@/components/cart/CartDrawer';
 
 interface HeaderProps {
   syncStatus: 'idle' | 'syncing' | 'success' | 'error';
@@ -48,7 +49,7 @@ export function Header({ syncStatus, lastSyncTime, onSync, isLoading, error }: H
           </div>
           
           {/* Quick Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Button
               variant="outline"
               size="sm"
@@ -58,6 +59,7 @@ export function Header({ syncStatus, lastSyncTime, onSync, isLoading, error }: H
               <ExternalLink className="w-4 h-4 mr-2" />
               Shopify Admin
             </Button>
+            <CartDrawer />
           </div>
         </div>
         

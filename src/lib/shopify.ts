@@ -50,6 +50,10 @@ export interface ShopifyProduct {
         };
       }>;
     };
+    options: Array<{
+      name: string;
+      values: string[];
+    }>;
   };
 }
 
@@ -103,6 +107,10 @@ const PRODUCTS_QUERY = `
                 }
               }
             }
+          }
+          options {
+            name
+            values
           }
         }
       }

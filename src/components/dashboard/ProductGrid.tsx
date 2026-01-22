@@ -1,6 +1,9 @@
+import { Link } from 'react-router-dom';
 import { ShopifyProduct, formatCurrency } from '@/lib/shopify';
-import { Package, CheckCircle, AlertTriangle } from 'lucide-react';
+import { useCartStore } from '@/stores/cartStore';
+import { Package, CheckCircle, AlertTriangle, ShoppingCart, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 interface ProductGridProps {
   products: ShopifyProduct[];
@@ -46,9 +49,31 @@ function ProductCard({ product }: { product: ShopifyProduct }) {
   const price = node.priceRange.minVariantPrice;
   const isAvailable = node.variants.edges.some(v => v.node.availableForSale);
   const variantCount = node.variants.edges.length;
+  const firstVariant = node.variants.edges[0]?.node;
+  
+  const { addItem, isLoading } = useCartStore();
+
+  const handleAddToCart = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!firstVariant) return;
+    
+    await addItem({
+      product,
+      variantId: firstVariant.id,
+      variantTitle: firstVariant.title,
+      price: firstVariant.price,
+      quantity: 1,
+      selectedOptions: firstVariant.selectedOptions,
+    });
+  };
   
   return (
-    <div className="group relative overflow-hidden rounded-lg border border-border bg-card transition-all duration-300 hover:border-primary/50 hover:shadow-[0_0_20px_hsl(var(--primary)/0.1)]">
+    <Link 
+      to={`/product/${node.handle}`}
+      className="group relative overflow-hidden rounded-lg border border-border bg-card transition-all duration-300 hover:border-primary/50 hover:shadow-[0_0_20px_hsl(var(--primary)/0.1)] block"
+    >
       {/* Image */}
       <div className="relative aspect-square overflow-hidden bg-muted">
         {mainImage ? (
@@ -89,6 +114,25 @@ function ProductCard({ product }: { product: ShopifyProduct }) {
             </>
           )}
         </div>
+
+        {/* Add to cart overlay */}
+        <div className="absolute inset-0 bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+          <Button
+            size="sm"
+            onClick={handleAddToCart}
+            disabled={!isAvailable || isLoading}
+            className="gap-2"
+          >
+            {isLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <>
+                <ShoppingCart className="w-4 h-4" />
+                Add to Cart
+              </>
+            )}
+          </Button>
+        </div>
       </div>
       
       {/* Content */}
@@ -115,6 +159,6 @@ function ProductCard({ product }: { product: ShopifyProduct }) {
           CJ Fulfillment Ready
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
