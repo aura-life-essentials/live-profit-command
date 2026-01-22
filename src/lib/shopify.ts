@@ -43,7 +43,6 @@ export interface ShopifyProduct {
             currencyCode: string;
           };
           availableForSale: boolean;
-          quantityAvailable: number | null;
           selectedOptions: Array<{
             name: string;
             value: string;
@@ -51,7 +50,6 @@ export interface ShopifyProduct {
         };
       }>;
     };
-    totalInventory: number | null;
   };
 }
 
@@ -63,7 +61,7 @@ export interface ProductsResponse {
   };
 }
 
-// GraphQL query for fetching products with inventory
+// GraphQL query for fetching products (Storefront API compatible)
 const PRODUCTS_QUERY = `
   query GetProducts($first: Int!) {
     products(first: $first) {
@@ -99,7 +97,6 @@ const PRODUCTS_QUERY = `
                   currencyCode
                 }
                 availableForSale
-                quantityAvailable
                 selectedOptions {
                   name
                   value
@@ -107,7 +104,6 @@ const PRODUCTS_QUERY = `
               }
             }
           }
-          totalInventory
         }
       }
     }
@@ -116,6 +112,9 @@ const PRODUCTS_QUERY = `
 
 // Storefront API helper function
 export async function storefrontApiRequest<T>(query: string, variables: Record<string, unknown> = {}): Promise<T> {
+  console.log('[Shopify] Making API request to:', SHOPIFY_CONFIG.STOREFRONT_URL);
+  console.log('[Shopify] Variables:', variables);
+  
   const response = await fetch(SHOPIFY_CONFIG.STOREFRONT_URL, {
     method: 'POST',
     headers: {
@@ -128,13 +127,19 @@ export async function storefrontApiRequest<T>(query: string, variables: Record<s
     }),
   });
 
+  console.log('[Shopify] Response status:', response.status);
+
   if (!response.ok) {
-    throw new Error(`Shopify API error: ${response.status}`);
+    const errorText = await response.text();
+    console.error('[Shopify] API Error:', errorText);
+    throw new Error(`Shopify API error: ${response.status} - ${errorText}`);
   }
 
   const data = await response.json();
+  console.log('[Shopify] Response data:', data);
   
   if (data.errors) {
+    console.error('[Shopify] GraphQL Errors:', data.errors);
     throw new Error(`Shopify GraphQL error: ${data.errors.map((e: { message: string }) => e.message).join(', ')}`);
   }
 
@@ -147,10 +152,11 @@ export async function fetchProducts(limit: number = 50): Promise<ShopifyProduct[
   return response.data.products.edges;
 }
 
-// Calculate total inventory across all products
+// Calculate total inventory across all products (count available variants)
 export function calculateTotalInventory(products: ShopifyProduct[]): number {
   return products.reduce((total, product) => {
-    return total + (product.node.totalInventory || 0);
+    const availableVariants = product.node.variants.edges.filter(v => v.node.availableForSale).length;
+    return total + availableVariants;
   }, 0);
 }
 

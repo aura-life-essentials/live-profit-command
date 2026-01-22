@@ -38,7 +38,9 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
     set({ isLoading: true, syncStatus: 'syncing', error: null });
     
     try {
+      console.log('[Dashboard] Starting product fetch...');
       const products = await fetchProducts(50);
+      console.log('[Dashboard] Fetched products:', products.length);
       set({ 
         products, 
         isLoading: false, 
@@ -46,10 +48,12 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
         syncStatus: 'success'
       });
     } catch (error) {
+      console.error('[Dashboard] Fetch error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch products';
       set({ 
         isLoading: false, 
         syncStatus: 'error',
-        error: error instanceof Error ? error.message : 'Failed to fetch products'
+        error: errorMessage
       });
     }
   },
