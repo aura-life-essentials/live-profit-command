@@ -7,9 +7,10 @@ interface HeaderProps {
   lastSyncTime: Date | null;
   onSync: () => void;
   isLoading: boolean;
+  error?: string | null;
 }
 
-export function Header({ syncStatus, lastSyncTime, onSync, isLoading }: HeaderProps) {
+export function Header({ syncStatus, lastSyncTime, onSync, isLoading, error }: HeaderProps) {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
       <div className="container mx-auto px-6 py-4">
@@ -42,6 +43,7 @@ export function Header({ syncStatus, lastSyncTime, onSync, isLoading }: HeaderPr
               lastSyncTime={lastSyncTime}
               onSync={onSync}
               isLoading={isLoading}
+              error={error}
             />
           </div>
           
@@ -66,6 +68,7 @@ export function Header({ syncStatus, lastSyncTime, onSync, isLoading }: HeaderPr
             lastSyncTime={lastSyncTime}
             onSync={onSync}
             isLoading={isLoading}
+            error={error}
           />
         </div>
       </div>

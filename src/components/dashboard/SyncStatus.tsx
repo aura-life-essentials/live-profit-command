@@ -7,9 +7,10 @@ interface SyncStatusProps {
   lastSyncTime: Date | null;
   onSync: () => void;
   isLoading: boolean;
+  error?: string | null;
 }
 
-export function SyncStatus({ status, lastSyncTime, onSync, isLoading }: SyncStatusProps) {
+export function SyncStatus({ status, lastSyncTime, onSync, isLoading, error }: SyncStatusProps) {
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', {
       hour: '2-digit',
@@ -49,35 +50,43 @@ export function SyncStatus({ status, lastSyncTime, onSync, isLoading }: SyncStat
   const Icon = config.icon;
 
   return (
-    <div className="flex items-center gap-4">
-      <div className={cn(
-        'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium',
-        config.bgColor
-      )}>
-        <Icon className={cn(
-          'w-4 h-4',
-          config.color,
-          status === 'syncing' && 'animate-sync-spin'
-        )} />
-        <span className={config.color}>{config.text}</span>
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-4">
+        <div className={cn(
+          'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium',
+          config.bgColor
+        )}>
+          <Icon className={cn(
+            'w-4 h-4',
+            config.color,
+            status === 'syncing' && 'animate-sync-spin'
+          )} />
+          <span className={config.color}>{config.text}</span>
+        </div>
+        
+        {lastSyncTime && status !== 'syncing' && (
+          <span className="text-xs text-muted-foreground font-mono">
+            Last sync: {formatTime(lastSyncTime)}
+          </span>
+        )}
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onSync}
+          disabled={isLoading}
+          className="border-primary/30 hover:border-primary hover:bg-primary/10"
+        >
+          <RefreshCw className={cn('w-4 h-4 mr-2', isLoading && 'animate-sync-spin')} />
+          Force Sync
+        </Button>
       </div>
       
-      {lastSyncTime && status !== 'syncing' && (
-        <span className="text-xs text-muted-foreground font-mono">
-          Last sync: {formatTime(lastSyncTime)}
-        </span>
+      {status === 'error' && error && (
+        <p className="text-xs text-destructive font-mono max-w-md truncate">
+          Error: {error}
+        </p>
       )}
-      
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={onSync}
-        disabled={isLoading}
-        className="border-primary/30 hover:border-primary hover:bg-primary/10"
-      >
-        <RefreshCw className={cn('w-4 h-4 mr-2', isLoading && 'animate-sync-spin')} />
-        Force Sync
-      </Button>
     </div>
   );
 }

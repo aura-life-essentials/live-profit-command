@@ -19,11 +19,11 @@ const Index = () => {
     isLoading, 
     lastSyncTime, 
     syncStatus,
+    error,
     realRevenue,
     realOrders,
     realConversions,
     fetchProducts,
-    startAutoSync
   } = useDashboardStore();
 
   useEffect(() => {
@@ -49,6 +49,7 @@ const Index = () => {
         lastSyncTime={lastSyncTime}
         onSync={fetchProducts}
         isLoading={isLoading}
+        error={error}
       />
 
       <main className="container mx-auto px-6 py-8 space-y-8">

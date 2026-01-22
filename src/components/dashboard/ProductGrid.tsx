@@ -44,8 +44,8 @@ function ProductCard({ product }: { product: ShopifyProduct }) {
   const { node } = product;
   const mainImage = node.images.edges[0]?.node;
   const price = node.priceRange.minVariantPrice;
-  const inventory = node.totalInventory || 0;
   const isAvailable = node.variants.edges.some(v => v.node.availableForSale);
+  const variantCount = node.variants.edges.length;
   
   return (
     <div className="group relative overflow-hidden rounded-lg border border-border bg-card transition-all duration-300 hover:border-primary/50 hover:shadow-[0_0_20px_hsl(var(--primary)/0.1)]">
@@ -105,7 +105,7 @@ function ProductCard({ product }: { product: ShopifyProduct }) {
             {formatCurrency(price.amount, price.currencyCode)}
           </span>
           <span className="text-xs text-muted-foreground font-mono">
-            {inventory} units
+            {variantCount} variant{variantCount !== 1 ? 's' : ''}
           </span>
         </div>
         
