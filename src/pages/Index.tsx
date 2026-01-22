@@ -4,6 +4,9 @@ import { calculateTotalInventory, getProductsByVendor } from '@/lib/shopify';
 import { Header } from '@/components/dashboard/Header';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { ProductGrid } from '@/components/dashboard/ProductGrid';
+import { ProductFilters } from '@/components/dashboard/ProductFilters';
+import { SalesChart } from '@/components/dashboard/SalesChart';
+import { useProductFilters } from '@/hooks/useProductFilters';
 import { 
   DollarSign, 
   ShoppingCart, 
@@ -25,6 +28,20 @@ const Index = () => {
     realConversions,
     fetchProducts,
   } = useDashboardStore();
+
+  const {
+    searchQuery,
+    setSearchQuery,
+    selectedVendor,
+    setSelectedVendor,
+    selectedType,
+    setSelectedType,
+    stockFilter,
+    setStockFilter,
+    vendors,
+    productTypes,
+    filteredProducts,
+  } = useProductFilters(products);
 
   useEffect(() => {
     // Fetch products immediately on mount
@@ -134,6 +151,11 @@ const Index = () => {
           </div>
         </section>
 
+        {/* Sales Charts */}
+        <section>
+          <SalesChart products={products} revenue={realRevenue} orders={realOrders} />
+        </section>
+
         {/* Products Grid */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
@@ -165,7 +187,22 @@ const Index = () => {
             </div>
           </div>
           
-          <ProductGrid products={products} isLoading={isLoading} />
+          {/* Filters */}
+          <ProductFilters
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            vendors={vendors}
+            selectedVendor={selectedVendor}
+            onVendorChange={setSelectedVendor}
+            productTypes={productTypes}
+            selectedType={selectedType}
+            onTypeChange={setSelectedType}
+            stockFilter={stockFilter}
+            onStockFilterChange={setStockFilter}
+            totalResults={filteredProducts.length}
+          />
+          
+          <ProductGrid products={filteredProducts} isLoading={isLoading} />
         </section>
 
         {/* Footer Status */}
