@@ -4,7 +4,7 @@
 export const SHOPIFY_CONFIG = {
   STORE_DOMAIN: 'lovable-project-i664s.myshopify.com',
   API_VERSION: '2025-07',
-  STOREFRONT_TOKEN: '39c9e9ce48ef993cf46a84facb2cb27e',
+  STOREFRONT_TOKEN: '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',
   get STOREFRONT_URL() {
     return `https://${this.STORE_DOMAIN}/api/${this.API_VERSION}/graphql.json`;
   }
