@@ -114,9 +114,12 @@ export default {
         "fade-up": "fade-up 0.5s ease-out forwards",
       },
       backgroundImage: {
-        'gradient-profit': 'var(--gradient-profit)',
+        'gradient-aura': 'var(--gradient-aura)',
         'gradient-card': 'var(--gradient-card)',
         'gradient-glow': 'var(--gradient-glow)',
+      },
+      boxShadow: {
+        aura: 'var(--shadow-aura)',
       },
     },
   },
