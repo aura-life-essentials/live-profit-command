@@ -151,11 +151,12 @@ const Index = () => {
             />
             <MetricCard
               title="Fulfillment"
-              value={vendorCount > 0 ? "CONNECTED" : "READY"}
+              value={vendorCount > 0 ? "Connected" : "Ready"}
               subtitle={`${vendorCount} vendor${vendorCount === 1 ? "" : "s"} active`}
               icon={<Truck className="w-8 h-8" />}
               variant="success"
             />
+
           </div>
         </section>
 
