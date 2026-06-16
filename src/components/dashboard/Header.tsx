@@ -1,10 +1,11 @@
-import { Skull, Zap, ExternalLink } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { SyncStatus } from './SyncStatus';
-import { CartDrawer } from '@/components/cart/CartDrawer';
+import { Sparkles, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { SyncStatus } from "./SyncStatus";
+import { CartDrawer } from "@/components/cart/CartDrawer";
+import { SHOPIFY_CONFIG } from "@/lib/shopify";
 
 interface HeaderProps {
-  syncStatus: 'idle' | 'syncing' | 'success' | 'error';
+  syncStatus: "idle" | "syncing" | "success" | "error";
   lastSyncTime: Date | null;
   onSync: () => void;
   isLoading: boolean;
@@ -12,32 +13,32 @@ interface HeaderProps {
 }
 
 export function Header({ syncStatus, lastSyncTime, onSync, isLoading, error }: HeaderProps) {
+  const storeAdminSlug = SHOPIFY_CONFIG.STORE_DOMAIN.replace(".myshopify.com", "");
+
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-md">
       <div className="container mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
-          {/* Logo & Title */}
-          <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between gap-4">
+          <a href="/" className="flex items-center gap-3 group">
             <div className="relative">
-              <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg animate-pulse-glow">
-                <Skull className="w-7 h-7 text-primary-foreground" />
+              <div
+                className="w-11 h-11 rounded-xl flex items-center justify-center shadow-aura"
+                style={{ background: "var(--gradient-aura)" }}
+              >
+                <Sparkles className="w-6 h-6 text-primary-foreground" />
               </div>
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-success border-2 border-background" />
+              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-success border-2 border-background" />
             </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-                <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  PROFIT REAPER
-                </span>
-                <Zap className="w-5 h-5 text-primary" />
+            <div className="leading-tight">
+              <h1 className="text-xl font-bold tracking-tight text-aura">
+                AuraLift for the Spirit
               </h1>
-              <p className="text-xs text-muted-foreground font-mono">
-                COMMAND CENTER • lovable-project-i664s.myshopify.com
+              <p className="text-[11px] text-muted-foreground font-mono">
+                Time is now ageless
               </p>
             </div>
-          </div>
-          
-          {/* Sync Status */}
+          </a>
+
           <div className="hidden md:flex items-center gap-4">
             <SyncStatus
               status={syncStatus}
@@ -47,14 +48,15 @@ export function Header({ syncStatus, lastSyncTime, onSync, isLoading, error }: H
               error={error}
             />
           </div>
-          
-          {/* Quick Actions */}
-          <div className="flex items-center gap-3">
+
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
               className="hidden sm:flex border-primary/30 hover:border-primary"
-              onClick={() => window.open('https://admin.shopify.com/store/lovable-project-i664s', '_blank')}
+              onClick={() =>
+                window.open(`https://admin.shopify.com/store/${storeAdminSlug}`, "_blank")
+              }
             >
               <ExternalLink className="w-4 h-4 mr-2" />
               Shopify Admin
@@ -62,8 +64,7 @@ export function Header({ syncStatus, lastSyncTime, onSync, isLoading, error }: H
             <CartDrawer />
           </div>
         </div>
-        
-        {/* Mobile Sync Status */}
+
         <div className="md:hidden mt-4">
           <SyncStatus
             status={syncStatus}

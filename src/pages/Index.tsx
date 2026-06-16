@@ -1,26 +1,32 @@
-import { useEffect } from 'react';
-import { useDashboardStore } from '@/stores/dashboardStore';
-import { calculateTotalInventory, getProductsByVendor } from '@/lib/shopify';
-import { Header } from '@/components/dashboard/Header';
-import { MetricCard } from '@/components/dashboard/MetricCard';
-import { ProductGrid } from '@/components/dashboard/ProductGrid';
-import { ProductFilters } from '@/components/dashboard/ProductFilters';
-import { SalesChart } from '@/components/dashboard/SalesChart';
-import { useProductFilters } from '@/hooks/useProductFilters';
-import { 
-  DollarSign, 
-  ShoppingCart, 
-  Package, 
-  TrendingUp, 
-  Users, 
-  Truck 
-} from 'lucide-react';
+import { lazy, Suspense, useMemo } from "react";
+import { useDashboardStore } from "@/stores/dashboardStore";
+import { calculateTotalInventory, getProductsByVendor, SHOPIFY_CONFIG } from "@/lib/shopify";
+import { Header } from "@/components/dashboard/Header";
+import { MetricCard } from "@/components/dashboard/MetricCard";
+import { ProductGrid } from "@/components/dashboard/ProductGrid";
+import { ProductFilters } from "@/components/dashboard/ProductFilters";
+import { useProductFilters } from "@/hooks/useProductFilters";
+import { useShopifyAutoSync } from "@/hooks/useShopifyAutoSync";
+import { Helmet } from "react-helmet-async";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DollarSign,
+  ShoppingCart,
+  Package,
+  TrendingUp,
+  Users,
+  Truck,
+} from "lucide-react";
+
+const SalesChart = lazy(() =>
+  import("@/components/dashboard/SalesChart").then((m) => ({ default: m.SalesChart })),
+);
 
 const Index = () => {
-  const { 
-    products, 
-    isLoading, 
-    lastSyncTime, 
+  const {
+    products,
+    isLoading,
+    lastSyncTime,
     syncStatus,
     error,
     realRevenue,
@@ -41,26 +47,30 @@ const Index = () => {
     vendors,
     productTypes,
     filteredProducts,
+    clearFilters,
+    hasActiveFilters,
   } = useProductFilters(products);
 
-  useEffect(() => {
-    // Fetch products immediately on mount
-    fetchProducts();
-    
-    // Then set up 15-minute auto-sync interval
-    const interval = setInterval(() => {
-      fetchProducts();
-    }, 15 * 60 * 1000);
-    
-    return () => clearInterval(interval);
-  }, []);
+  useShopifyAutoSync();
 
-  const totalInventory = calculateTotalInventory(products);
-  const vendorBreakdown = getProductsByVendor(products);
-  const vendorCount = Object.keys(vendorBreakdown).length;
+  const totalInventory = useMemo(() => calculateTotalInventory(products), [products]);
+  const vendorBreakdown = useMemo(() => getProductsByVendor(products), [products]);
+  const vendorEntries = useMemo(() => Object.entries(vendorBreakdown), [vendorBreakdown]);
+  const vendorCount = vendorEntries.length;
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>AuraLift for the Spirit — Time is now ageless</title>
+        <meta
+          name="description"
+          content="Shop AuraLift for the Spirit: timeless wellness essentials. Time is now ageless."
+        />
+        <link rel="canonical" href="/" />
+        <meta property="og:title" content="AuraLift for the Spirit" />
+        <meta property="og:url" content="/" />
+      </Helmet>
+
       <Header
         syncStatus={syncStatus}
         lastSyncTime={lastSyncTime}
@@ -69,19 +79,17 @@ const Index = () => {
         error={error}
       />
 
-      <main className="container mx-auto px-6 py-8 space-y-8">
-        {/* Real Revenue Section */}
+      <main className="container mx-auto px-6 py-8 space-y-10">
+        {/* Real-time metrics */}
         <section className="space-y-4">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-            <h2 className="text-lg font-semibold text-foreground">
-              REAL-TIME METRICS
-            </h2>
+            <h2 className="text-lg font-semibold text-foreground">REAL-TIME METRICS</h2>
             <span className="text-xs text-muted-foreground font-mono">
-              • LIVE DATA ONLY • NO SIMULATIONS
+              • LIVE DATA ONLY
             </span>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <MetricCard
               title="Total Revenue"
@@ -95,37 +103,32 @@ const Index = () => {
               value={realOrders}
               subtitle="Confirmed orders"
               icon={<ShoppingCart className="w-8 h-8" />}
-              variant="default"
             />
             <MetricCard
               title="Conversion Rate"
               value={`${realConversions.toFixed(2)}%`}
               subtitle="From real traffic"
               icon={<TrendingUp className="w-8 h-8" />}
-              variant="default"
             />
             <MetricCard
               title="Customers"
               value={0}
               subtitle="Unique buyers"
               icon={<Users className="w-8 h-8" />}
-              variant="default"
             />
           </div>
         </section>
 
-        {/* Inventory Section */}
+        {/* Inventory */}
         <section className="space-y-4">
           <div className="flex items-center gap-2">
             <Package className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold text-foreground">
-              INVENTORY STATUS
-            </h2>
+            <h2 className="text-lg font-semibold text-foreground">INVENTORY STATUS</h2>
             <span className="text-xs text-muted-foreground font-mono">
               • {products.length} PRODUCTS SYNCED
             </span>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <MetricCard
               title="Total Products"
@@ -135,43 +138,39 @@ const Index = () => {
               variant="success"
             />
             <MetricCard
-              title="Total Inventory"
+              title="Available Variants"
               value={totalInventory.toLocaleString()}
-              subtitle="Units across all variants"
+              subtitle="In stock across catalog"
               icon={<Package className="w-8 h-8" />}
-              variant="default"
             />
             <MetricCard
-              title="CJ Fulfillment"
-              value="CONNECTED"
-              subtitle={`${vendorCount} vendors active`}
+              title="Fulfillment"
+              value={vendorCount > 0 ? "CONNECTED" : "READY"}
+              subtitle={`${vendorCount} vendor${vendorCount === 1 ? "" : "s"} active`}
               icon={<Truck className="w-8 h-8" />}
               variant="success"
             />
           </div>
         </section>
 
-        {/* Sales Charts */}
+        {/* Analytics */}
         <section>
-          <SalesChart products={products} revenue={realRevenue} orders={realOrders} />
+          <Suspense fallback={<Skeleton className="h-[340px] w-full rounded-lg" />}>
+            <SalesChart products={products} revenue={realRevenue} orders={realOrders} />
+          </Suspense>
         </section>
 
-        {/* Products Grid */}
+        {/* Catalog */}
         <section className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-primary" />
-              <h2 className="text-lg font-semibold text-foreground">
-                PRODUCT CATALOG
-              </h2>
-              <span className="text-xs text-muted-foreground font-mono">
-                • REAL SHOPIFY DATA
-              </span>
+              <h2 className="text-lg font-semibold text-foreground">PRODUCT CATALOG</h2>
+              <span className="text-xs text-muted-foreground font-mono">• REAL SHOPIFY DATA</span>
             </div>
-            
-            {/* Vendor breakdown */}
+
             <div className="hidden lg:flex items-center gap-2">
-              {Object.entries(vendorBreakdown).slice(0, 3).map(([vendor, count]) => (
+              {vendorEntries.slice(0, 3).map(([vendor, count]) => (
                 <span
                   key={vendor}
                   className="px-2 py-1 text-xs font-mono rounded bg-secondary text-secondary-foreground"
@@ -179,15 +178,14 @@ const Index = () => {
                   {vendor}: {count}
                 </span>
               ))}
-              {Object.keys(vendorBreakdown).length > 3 && (
+              {vendorEntries.length > 3 && (
                 <span className="text-xs text-muted-foreground">
-                  +{Object.keys(vendorBreakdown).length - 3} more
+                  +{vendorEntries.length - 3} more
                 </span>
               )}
             </div>
           </div>
-          
-          {/* Filters */}
+
           <ProductFilters
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
@@ -201,28 +199,28 @@ const Index = () => {
             onStockFilterChange={setStockFilter}
             totalResults={filteredProducts.length}
           />
-          
-          <ProductGrid products={filteredProducts} isLoading={isLoading} />
+
+          <ProductGrid
+            products={filteredProducts}
+            isLoading={isLoading}
+            hasActiveFilters={hasActiveFilters}
+            onClearFilters={clearFilters}
+          />
         </section>
 
-        {/* Footer Status */}
         <footer className="border-t border-border pt-6 pb-8">
           <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-muted-foreground font-mono">
-            <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                Store: lovable-project-i664s.myshopify.com
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
+                Store: {SHOPIFY_CONFIG.STORE_DOMAIN}
               </span>
               <span>•</span>
-              <span>API: 2025-07</span>
+              <span>API {SHOPIFY_CONFIG.API_VERSION}</span>
               <span>•</span>
-              <span>Sync: Every 15 min</span>
+              <span>Auto-sync every 15 min</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-destructive">NO DEMO MODE</span>
-              <span>•</span>
-              <span className="text-success">LIVE DATA ONLY</span>
-            </div>
+            <div>© {new Date().getFullYear()} AuraLift for the Spirit</div>
           </div>
         </footer>
       </main>

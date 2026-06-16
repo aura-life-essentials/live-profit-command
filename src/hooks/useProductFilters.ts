@@ -1,67 +1,57 @@
-import { useMemo, useState } from 'react';
-import { ShopifyProduct } from '@/lib/shopify';
+import { useMemo, useState } from "react";
+import { ShopifyProduct } from "@/lib/shopify";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 
 export function useProductFilters(products: ShopifyProduct[]) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedVendor, setSelectedVendor] = useState('all');
-  const [selectedType, setSelectedType] = useState('all');
-  const [stockFilter, setStockFilter] = useState<'all' | 'in-stock' | 'out-of-stock'>('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedVendor, setSelectedVendor] = useState("all");
+  const [selectedType, setSelectedType] = useState("all");
+  const [stockFilter, setStockFilter] = useState<"all" | "in-stock" | "out-of-stock">("all");
 
-  // Extract unique vendors and product types
+  const debouncedQuery = useDebouncedValue(searchQuery, 200);
+
   const vendors = useMemo(() => {
-    const vendorSet = new Set<string>();
-    products.forEach((p) => {
-      if (p.node.vendor) vendorSet.add(p.node.vendor);
-    });
-    return Array.from(vendorSet).sort();
+    const set = new Set<string>();
+    for (const p of products) if (p.node.vendor) set.add(p.node.vendor);
+    return Array.from(set).sort();
   }, [products]);
 
   const productTypes = useMemo(() => {
-    const typeSet = new Set<string>();
-    products.forEach((p) => {
-      if (p.node.productType) typeSet.add(p.node.productType);
-    });
-    return Array.from(typeSet).sort();
+    const set = new Set<string>();
+    for (const p of products) if (p.node.productType) set.add(p.node.productType);
+    return Array.from(set).sort();
   }, [products]);
 
-  // Filter products
   const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
-      const { node } = product;
-
-      // Search filter
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        const matchesTitle = node.title.toLowerCase().includes(query);
-        const matchesDescription = node.description?.toLowerCase().includes(query);
-        const matchesVendor = node.vendor?.toLowerCase().includes(query);
-        if (!matchesTitle && !matchesDescription && !matchesVendor) {
-          return false;
-        }
+    const q = debouncedQuery.trim().toLowerCase();
+    return products.filter(({ node }) => {
+      if (q) {
+        const haystack = `${node.title} ${node.description ?? ""} ${node.vendor ?? ""}`.toLowerCase();
+        if (!haystack.includes(q)) return false;
       }
+      if (selectedVendor !== "all" && node.vendor !== selectedVendor) return false;
+      if (selectedType !== "all" && node.productType !== selectedType) return false;
 
-      // Vendor filter
-      if (selectedVendor !== 'all' && node.vendor !== selectedVendor) {
-        return false;
-      }
-
-      // Product type filter
-      if (selectedType !== 'all' && node.productType !== selectedType) {
-        return false;
-      }
-
-      // Stock filter
       const isAvailable = node.variants.edges.some((v) => v.node.availableForSale);
-      if (stockFilter === 'in-stock' && !isAvailable) {
-        return false;
-      }
-      if (stockFilter === 'out-of-stock' && isAvailable) {
-        return false;
-      }
+      if (stockFilter === "in-stock" && !isAvailable) return false;
+      if (stockFilter === "out-of-stock" && isAvailable) return false;
 
       return true;
     });
-  }, [products, searchQuery, selectedVendor, selectedType, stockFilter]);
+  }, [products, debouncedQuery, selectedVendor, selectedType, stockFilter]);
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setSelectedVendor("all");
+    setSelectedType("all");
+    setStockFilter("all");
+  };
+
+  const hasActiveFilters =
+    searchQuery !== "" ||
+    selectedVendor !== "all" ||
+    selectedType !== "all" ||
+    stockFilter !== "all";
 
   return {
     searchQuery,
@@ -75,5 +65,7 @@ export function useProductFilters(products: ShopifyProduct[]) {
     vendors,
     productTypes,
     filteredProducts,
+    clearFilters,
+    hasActiveFilters,
   };
 }
