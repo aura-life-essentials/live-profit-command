@@ -84,11 +84,14 @@ const Index = () => {
         <section className="space-y-4">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-            <h2 className="text-lg font-semibold text-foreground">REAL-TIME METRICS</h2>
-            <span className="text-xs text-muted-foreground font-mono">
-              • LIVE DATA ONLY
+            <h2 className="text-base font-semibold text-foreground tracking-wide">
+              Live overview
+            </h2>
+            <span className="text-xs text-muted-foreground">
+              · synced from your Shopify store
             </span>
           </div>
+
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <MetricCard
@@ -122,12 +125,15 @@ const Index = () => {
         {/* Inventory */}
         <section className="space-y-4">
           <div className="flex items-center gap-2">
-            <Package className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold text-foreground">INVENTORY STATUS</h2>
-            <span className="text-xs text-muted-foreground font-mono">
-              • {products.length} PRODUCTS SYNCED
+            <Package className="w-4 h-4 text-primary" />
+            <h2 className="text-base font-semibold text-foreground tracking-wide">
+              Inventory
+            </h2>
+            <span className="text-xs text-muted-foreground">
+              · {products.length} product{products.length === 1 ? "" : "s"} synced
             </span>
           </div>
+
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <MetricCard
@@ -165,17 +171,19 @@ const Index = () => {
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-primary" />
-              <h2 className="text-lg font-semibold text-foreground">PRODUCT CATALOG</h2>
-              <span className="text-xs text-muted-foreground font-mono">• REAL SHOPIFY DATA</span>
+              <h2 className="text-base font-semibold text-foreground tracking-wide">
+                Catalog
+              </h2>
+              <span className="text-xs text-muted-foreground">· straight from Shopify</span>
             </div>
 
             <div className="hidden lg:flex items-center gap-2">
               {vendorEntries.slice(0, 3).map(([vendor, count]) => (
                 <span
                   key={vendor}
-                  className="px-2 py-1 text-xs font-mono rounded bg-secondary text-secondary-foreground"
+                  className="px-2 py-1 text-xs rounded bg-secondary text-secondary-foreground"
                 >
-                  {vendor}: {count}
+                  {vendor} · {count}
                 </span>
               ))}
               {vendorEntries.length > 3 && (
@@ -185,6 +193,7 @@ const Index = () => {
               )}
             </div>
           </div>
+
 
           <ProductFilters
             searchQuery={searchQuery}
