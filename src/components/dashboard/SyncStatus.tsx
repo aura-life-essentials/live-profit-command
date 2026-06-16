@@ -22,27 +22,27 @@ export function SyncStatus({ status, lastSyncTime, onSync, isLoading, error }: S
   const statusConfig = {
     idle: {
       icon: Clock,
-      text: 'Waiting to sync',
-      color: 'text-muted-foreground',
-      bgColor: 'bg-muted/50',
+      text: "Ready to sync",
+      color: "text-muted-foreground",
+      bgColor: "bg-muted/50",
     },
     syncing: {
       icon: RefreshCw,
-      text: 'Syncing with Shopify...',
-      color: 'text-primary',
-      bgColor: 'bg-primary/10',
+      text: "Syncing…",
+      color: "text-primary",
+      bgColor: "bg-primary/10",
     },
     success: {
       icon: CheckCircle,
-      text: 'Live data synced',
-      color: 'text-success',
-      bgColor: 'bg-success/10',
+      text: "Up to date",
+      color: "text-success",
+      bgColor: "bg-success/10",
     },
     error: {
       icon: AlertCircle,
-      text: 'Sync failed',
-      color: 'text-destructive',
-      bgColor: 'bg-destructive/10',
+      text: "Sync issue",
+      color: "text-destructive",
+      bgColor: "bg-destructive/10",
     },
   };
 
@@ -51,25 +51,29 @@ export function SyncStatus({ status, lastSyncTime, onSync, isLoading, error }: S
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-4">
-        <div className={cn(
-          'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium',
-          config.bgColor
-        )}>
-          <Icon className={cn(
-            'w-4 h-4',
-            config.color,
-            status === 'syncing' && 'animate-sync-spin'
-          )} />
+      <div className="flex items-center gap-3 flex-wrap">
+        <div
+          className={cn(
+            "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium",
+            config.bgColor,
+          )}
+        >
+          <Icon
+            className={cn(
+              "w-4 h-4",
+              config.color,
+              status === "syncing" && "animate-sync-spin",
+            )}
+          />
           <span className={config.color}>{config.text}</span>
         </div>
-        
-        {lastSyncTime && status !== 'syncing' && (
-          <span className="text-xs text-muted-foreground font-mono">
-            Last sync: {formatTime(lastSyncTime)}
+
+        {lastSyncTime && status !== "syncing" && (
+          <span className="text-xs text-muted-foreground">
+            Last synced {formatTime(lastSyncTime)}
           </span>
         )}
-        
+
         <Button
           variant="outline"
           size="sm"
@@ -77,10 +81,11 @@ export function SyncStatus({ status, lastSyncTime, onSync, isLoading, error }: S
           disabled={isLoading}
           className="border-primary/30 hover:border-primary hover:bg-primary/10"
         >
-          <RefreshCw className={cn('w-4 h-4 mr-2', isLoading && 'animate-sync-spin')} />
-          Force Sync
+          <RefreshCw className={cn("w-4 h-4 mr-2", isLoading && "animate-sync-spin")} />
+          Sync now
         </Button>
       </div>
+
       
       {status === 'error' && error && (
         <p className="text-xs text-destructive font-mono max-w-md truncate">
