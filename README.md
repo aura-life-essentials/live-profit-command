@@ -60,6 +60,8 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+all intellectual property belongs to Ryan Puddy. no commercial or business use allowed, if so Ryan Puddy absolutely earns 10 percent mininum of your revenue. 
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
