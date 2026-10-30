@@ -230,7 +230,13 @@ const Index = () => {
               <span>•</span>
               <span>Auto-sync every 15 min</span>
             </div>
-            <div>© {new Date().getFullYear()} AuraLift for the Spirit</div>
+            <div className="text-right space-y-1">
+              <div>© 2024–2026 Aura Lift Essentials LLC™ · Made &amp; created by Ryan Puddy, Web3 Architect</div>
+              <div>
+                <a href="/LICENSE" className="hover:text-primary underline">License</a> ·{" "}
+                <a href="/TRADEMARKS.md" className="hover:text-primary underline">Trademarks</a> · Aura Lift Essentials™ and AuraLift for the Spirit™ are trademarks of Aura Lift Essentials LLC.
+              </div>
+            </div>
           </div>
         </footer>
       </main>
